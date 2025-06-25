@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/roamnjo/grpc_service/internal/auth"
 	"github.com/roamnjo/grpc_service/internal/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -37,10 +38,15 @@ func main() {
 		return
 	}
 
+	repo := auth.NewRepository(db)
+	handler := auth.NewHandler(repo, log)
+
 	r := gin.Default()
+	r.POST("/signup", handler.SignUp)
+	r.POST("/signin", handler.SignIn)
 
 	log.Info("Starting server on port 8080")
-	err := r.Run()
+	err = r.Run()
 	if err != nil {
 		log.Error("starting server:", err)
 	}
