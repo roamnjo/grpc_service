@@ -38,15 +38,9 @@ func (h *Handler) SignUp(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.FindEmail(context.Background(), upreq.Email)
+	err = ValidateSignup(context.Background(), upreq.Name, upreq.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "email already exists"})
-		return
-	}
-	err = h.repo.FindSameName(context.Background(), upreq.Name)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name already exists"})
-		return
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name or email already exists"})
 	}
 
 	hashedPassword, err := hash.HashPassword(upreq.Password)
@@ -75,7 +69,6 @@ func (h *Handler) SignUp(c *gin.Context) {
 
 func (h *Handler) SignIn(c *gin.Context) {
 	var inreq InRequest
-	var upreq UpRequest
 
 	err := c.BindJSON(&inreq)
 	if err != nil {
@@ -89,7 +82,13 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	if !hash.CheckPasswordHash(inreq.Password, upreq.Password) {
+	user, err := h.repo.GetUserByEmail(context.Background(), inreq.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get user"})
+		return
+	}
+
+	if !hash.CheckPasswordHash(inreq.Password, user.Password) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "wrong password"})
 		return
 	}
