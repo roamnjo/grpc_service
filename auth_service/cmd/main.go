@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/roamnjo/grpc_service/internal/auth"
 	"github.com/roamnjo/grpc_service/internal/logger"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,6 +32,11 @@ func main() {
 	log := logger.New(slog.LevelInfo)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Error("loading .env file:", err)
+	}
 
 	db, err := ConnectToMongo(ctx, os.Getenv("DB_URI"))
 	if err != nil {
