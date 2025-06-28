@@ -72,7 +72,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 
 	err := c.BindJSON(&inreq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 
